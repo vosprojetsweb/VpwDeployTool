@@ -1,0 +1,14 @@
+<?php
+/**
+ *
+ * @author christophe.borsenberger@vosprojetsweb.pro
+ *
+ * Created : 11 juin 2013
+ * Encoding : UTF-8
+ */
+
+if (sizeof($pendingFiles) === 0) {
+    echo "No file to deploy to production";
+} else {
+    mvd($pendingFiles);
+}

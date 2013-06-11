@@ -1,0 +1,38 @@
+<?php
+/**
+ *
+ * @author christophe.borsenberger@vosprojetsweb.pro
+ *
+ * Created : 7 juin 2013
+ * Encoding : UTF-8
+ */
+?>
+<h5><?php echo $this->escapeHtml($root)?></h5>
+
+<style>
+#files-to-sync tr.selected {background-color: #CCC;}
+</style>
+
+<form method="post" action="<?php echo $this->url('vpwdeploytool/putFilestoStaging')?>">
+
+<input type="submit" class="btn" value="Put files to staging">
+
+<table class="table" id="files-to-sync">
+<?php foreach ($sourceFiles as $filename):
+    $file = $root . '/' . $filename;
+    $is_dir = is_dir($file);
+    ?>
+    <tr>
+        <?php if ($is_dir):?>
+            <td><i class="icon-folder-open"></i></td>
+        <?php else:?>
+            <td><input type="checkbox" name="files[]" value="<?php echo $filename?>" /></td>
+        <?php endif;?>
+        <td><?php echo $this->escapeHtml($filename)?></td>
+    </tr>
+<?php endforeach; ?>
+</table>
+
+<input type="submit" class="btn" value="Put files to staging">
+
+</form>

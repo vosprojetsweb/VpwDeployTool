@@ -1,0 +1,30 @@
+<?php echo $this->doctype(); ?>
+<html lang="fr">
+    <head>
+        <meta charset="utf-8">
+        <?php echo $this->headTitle('thedailypressreview.com')->setSeparator(' - ')->setAutoEscape(false) ?>
+
+        <!-- Le styles -->
+        <?php
+        echo $this->headLink()->prependStylesheet($this->basePath() . '/static/bootstrap/css/bootstrap.min.css');
+        ?>
+
+        <!-- Scripts -->
+        <?php echo $this->headScript()->prependFile($this->basePath() . '/static/bootstrap/js/bootstrap.min.js')
+                                      ->prependFile($this->basePath()  . '/static/jquery/jquery.min.js') ?>
+
+    </head>
+    <body>
+        <?php
+        if (isset($fatalError) === true) {
+            ?>
+            <div class="alert"><?php echo $this->escapeHtml($fatalError)?></div>
+            <?php
+        }
+
+        echo $this->content;
+
+        echo $this->inlineScript();
+        ?>
+    </body>
+</html>
