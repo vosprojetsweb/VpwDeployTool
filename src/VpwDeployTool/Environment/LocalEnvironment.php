@@ -28,8 +28,8 @@ class LocalEnvironment extends AbstractEnvironment
             throw new DeployToolException('There is no file to put in staging envionment');
         }
 
-        $rsyncWrapper = new RsyncWrapper($this->getRoot(), $desc->getRoot());
-        $rsyncWrapper->synchronizeFiles($files);
+        $rsyncWrapper = new RsyncWrapper($this->getRoot(), $dest->getRoot());
+        return $rsyncWrapper->synchronizeFiles($files);
     }
 
 }

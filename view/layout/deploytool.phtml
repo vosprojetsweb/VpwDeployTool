@@ -15,13 +15,17 @@
 
     </head>
     <body>
+        <h1>Admin de déploiement</h1>
+        <div class="nav-collapse collapse">
+                <?php
+                echo $this->navigation('vpwdeploytool_navigation')->menu()->renderMenu(null, array(
+                    'minDepth' => 1,
+                    'maxDepth' => 1,
+                    'ulClass' => 'nav'
+                ));
+                ?>
+        </div>
         <?php
-        if (isset($fatalError) === true) {
-            ?>
-            <div class="alert"><?php echo $this->escapeHtml($fatalError)?></div>
-            <?php
-        }
-
         echo $this->content;
 
         echo $this->inlineScript();

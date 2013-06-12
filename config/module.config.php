@@ -1,4 +1,5 @@
 <?php
+use Zend\Navigation\Service\ConstructedNavigationFactory;
 return array(
     'view_manager' => array(
         'template_path_stack' => array(
@@ -61,5 +62,26 @@ return array(
                 )
             )
         )
-    )
+    ),
+
+    'navigation' => array(
+        'VpwDeployTool' => array(
+            'sourceFiles' => array(
+                'label' => 'Source Files',
+                'route' => 'vpwdeploytool',
+            ),
+            'pendingFiles' => array(
+                'label' => 'Pending Files',
+                'route' => 'pendingFiles',
+            )
+        )
+    ),
+
+    'service_manager' => array(
+        'factories' => array(
+            'vpwdeploytool_navigation' => function ($sm) {
+                return new ConstructedNavigationFactory($config = $sm->get('Configuration')['navigation']['VpwDeployTool']);
+            }
+        )
+    ),
 );

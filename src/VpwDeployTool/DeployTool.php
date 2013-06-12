@@ -46,7 +46,21 @@ class DeployTool
         $this->devEnv = $development;
         $this->stagingEnv = $staging;
         $this->productionEnv = $production;
+    }
 
+    public function getDevelopmentEnvironment()
+    {
+        return $this->devEnv;
+    }
+
+    public function getStagingEnvironment()
+    {
+        return $this->stagingEnv;
+    }
+
+    public function getProductionEnvironment()
+    {
+        return $this->productionEnv;
     }
 
     /**

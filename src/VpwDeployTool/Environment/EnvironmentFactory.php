@@ -28,7 +28,8 @@ class EnvironmentFactory
                 $env = new $type($spec['root']);
                 break;
             case 'VpwDeployTool\Environment\RemoteEnvironment':
-                $env = new $type($spec['root'], $spec['sshUser'], $spec['host']);
+                $env = new $type($spec['root'], $spec['host']);
+                $env->setOptions($spec);
                 break;
         }
 

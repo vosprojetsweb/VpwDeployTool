@@ -36,7 +36,7 @@ class DeployToolController extends AbstractActionController
         $files = $this->getRequest()->getPost('files');
 
         $deployTool = $this->getServiceLocator()->get('VpwDeployTool\DeployTool');
-        $deployTool->putSourceFilesToStaging($files, $output);
+        $output = $deployTool->putSourceFilesToStaging($files);
 
         return new ViewModel(array(
             'output' => $output,

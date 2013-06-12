@@ -140,6 +140,8 @@ class RsyncWrapper extends AbstractWrapper
         if ($returnVar !== 0) {
             throw new WrapperException(implode("\n", $output));
         }
+
+        return $output;
     }
 
     private function getDefaultOptions()
