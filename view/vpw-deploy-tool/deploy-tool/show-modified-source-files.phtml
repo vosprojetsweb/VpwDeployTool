@@ -7,32 +7,44 @@
  * Encoding : UTF-8
  */
 ?>
-<h5><?php echo $this->escapeHtml($root)?></h5>
-
 <style>
 #files-to-sync tr.selected {background-color: #CCC;}
 </style>
 
-<form method="post" action="<?php echo $this->url('vpwdeploytool/putFilestoStaging')?>">
+<pre><?php echo $command; ?></pre>
 
+<?php if (sizeof($sourceFiles) === 0): ?>
+    <div class="alert alert-info">Aucun fichier à mettre en production.</div>
+<?php else: ?>
+<b><?php echo $this->escapeHtml($website->getDevelopmentEnvironment()->getRoot())?></b>
+
+<form method="post" action="<?php echo $this->url('vpwdeploytool/putFilestoStaging', array('website' => $website->getId()))?>">
 <input type="submit" class="btn" value="Put files to staging">
-
 <table class="table" id="files-to-sync">
-<?php foreach ($sourceFiles as $filename):
-    $file = $root . '/' . $filename;
-    $is_dir = is_dir($file);
+<?php foreach ($sourceFiles as $file):
+    $is_dir = $file->isDir();
     ?>
     <tr>
         <?php if ($is_dir):?>
             <td><i class="icon-folder-open"></i></td>
         <?php else:?>
-            <td><input type="checkbox" name="files[]" value="<?php echo $filename?>" /></td>
+            <td><input type="checkbox" name="files[]" value="<?php echo $file->getFilename()?>" /></td>
         <?php endif;?>
-        <td><?php echo $this->escapeHtml($filename)?></td>
+        <td><a href=""><?php echo $this->escapeHtml($file->getFilename())?></a></td>
+        <td>
+            <?php
+            if ($file->isFile() === false):
+                echo '<span class="badge badge-warning">deleted</span>';
+            else:
+                echo date('d-m-Y H:i:s', $file->getMTime());
+            endif;
+            ?>
+        </td>
+        <td><a href=""><i class="icon-search"></i></a></td>
     </tr>
 <?php endforeach; ?>
 </table>
 
 <input type="submit" class="btn" value="Put files to staging">
-
 </form>
+<?php endif; ?>

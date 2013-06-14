@@ -15,72 +15,62 @@ use VpwDeployTool\Exception\WrapperException;
 class GitWrapper extends AbstractWrapper
 {
 
-    private $repository;
+    private $workTree;
 
-    public function __construct($repository)
+    private $gitDir;
+
+    public function __construct($workTree, $gitDir = null)
     {
-        $this->setRepository($repository);
+        $this->setWorkTree($workTree);
+
+        if ($gitDir !== null) {
+            $this->setGitDir($gitDir);
+        }
     }
 
-    public function setRepository($repository)
+    public function setWorkTree($workTree)
     {
-        $repository = rtrim($repository, '/');
-        if (is_dir($repository . '/.git') === false) {
-            throw new WrapperException("'$repository' is not a valid git repository.");
-        }
+        $this->workTree = $workTree;
+    }
 
-        $this->repository = $repository;
+    public function getWorkTree()
+    {
+        return $this->workTree;
+    }
+
+    public function setGitDir($gitDir)
+    {
+        $this->gitDir = $gitDir;
     }
 
     public function getGitDir()
     {
-        return $this->repository . '/.git';
-    }
-
-    public function getGitWorkTree()
-    {
-        return $this->repository;
-    }
-
-    public function setGitWorkTree($dir)
-    {
-        $this->repository = $dir;
-    }
-
-    public function getFileList()
-    {
-        $cmd = $this->findExec("git");
-        $cmd .= ' ls-files -comd --full-name';
-
-        $output = $this->exec($cmd);
-
-        $files = array();
-        foreach ($output as $file) {
-            $files[] = $this->repository . '/' . $file;
+        if($this->gitDir === null) {
+            return $this->workTree . '/.git';
         }
 
-        return $files;
+        return $this->gitDir;
     }
 
     public function addAll()
     {
         $cmd = $this->findExec("git");
         $cmd .= " add --all";
-        $this->exec($cmd);
+        return $this->exec($cmd);
     }
 
     public function commit($message)
     {
         $cmd = $this->findExec("git");
-        $cmd .= ' commit --verbose --no-status --message ' .escapeshellarg($message);
-        $output = $this->exec($cmd);
+        $cmd .= ' commit --verbose --status --message ' .escapeshellarg($message);
+        return $this->exec($cmd);
     }
 
     public function findExec($exec)
     {
         $exec = parent::findExec($exec);
         $exec .= ' --git-dir='.escapeshellarg($this->getGitDir());
-        $exec .= ' --work-tree='.escapeshellarg($this->getGitWorkTree());
+        $exec .= ' --work-tree='.escapeshellarg($this->getWorkTree());
 
         return $exec;
     }

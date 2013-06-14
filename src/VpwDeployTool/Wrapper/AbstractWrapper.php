@@ -50,10 +50,10 @@ abstract class AbstractWrapper
     {
         $this->lastCommand = $cmd;
 
-        exec($cmd, $output, $returnVar);
+        exec($cmd .' 2>&1', $output, $returnVar);
 
         if ($returnVar !== 0) {
-            throw new WrapperException(implode("\n", $output));
+            throw new WrapperException(implode("\n", $output), $returnVar);
         }
 
         return $output;

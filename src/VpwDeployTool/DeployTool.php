@@ -4,6 +4,8 @@ use VpwDeployTool\Environment\AbstractEnvironment;
 use VpwDeployTool\Wrapper\RsyncWrapper;
 use VpwDeployTool\Exception\InvalidArgumentException;
 use VpwDeployTool\Exception\DeployToolException;
+use VpwDeployTool\Environment\GitEnvironment;
+use VpwDeployTool\Wrapper\GitWrapper;
 /**
  *
  * @author christophe.borsenberger@vosprojetsweb.pro
@@ -16,52 +18,50 @@ class DeployTool
 {
 
     /**
-     * @var AbstractEnvironment
-     */
-    private $devEnv;
-
-    /**
-     * @var AbstractEnvironment
-     */
-    private $stagingEnv;
-
-    /**
-     * @var AbstractEnvironment
-     */
-    private $productionEnv;
-
-
-    /**
      *
-     * @param unknown $development
-     * @param unknown $staging
-     * @param unknown $production
+     * @var Website
      */
-    public function __construct(
-        AbstractEnvironment $development,
-        AbstractEnvironment $staging,
-        AbstractEnvironment $production
-    )
+    private $website;
+
+    private $lastCommand = null;
+
+    public function setWebsite(Website $website)
     {
-        $this->devEnv = $development;
-        $this->stagingEnv = $staging;
-        $this->productionEnv = $production;
+        $this->website = $website;
     }
 
-    public function getDevelopmentEnvironment()
+    public function getWebsite()
     {
-        return $this->devEnv;
+        return $this->website;
     }
 
-    public function getStagingEnvironment()
+    private function getPendingFiles(AbstractEnvironment $src, AbstractEnvironment $dest)
     {
-        return $this->stagingEnv;
+        $rsyncWrapper = new RsyncWrapper($src, $dest);
+        $fileList = $rsyncWrapper->getFileList();
+        $this->lastCommand = $rsyncWrapper->getLastCommand();
+        return $fileList;
     }
 
-    public function getProductionEnvironment()
+    private function synchroniseFiles(AbstractEnvironment $src, AbstractEnvironment $dest, $message=null, $specificFiles = null)
     {
-        return $this->productionEnv;
+        if ($src instanceof GitEnvironment) {
+            try {
+                $gitWrapper = new GitWrapper($src->getRoot(), $src->getGitDir());
+                $gitWrapper->addAll();
+                $gitWrapper->commit($message);
+            } catch (\Exception $e) {
+
+            }
+        }
+
+        $rsyncWrapper = new RsyncWrapper($src, $dest);
+        $output = $rsyncWrapper->synchronizeFiles($specificFiles);
+        $this->lastCommand = $rsyncWrapper->getLastCommand();
+
+        return $output;
     }
+
 
     /**
      * Returns a list of files which have been modified in the
@@ -70,16 +70,24 @@ class DeployTool
      */
     public function getModifiedSourceFiles()
     {
-        return $this->devEnv->getPendingFiles($this->stagingEnv);
+        return $this->getPendingFiles(
+            $this->website->getDevelopmentEnvironment(),
+            $this->website->getStagingEnvironment()
+        );
     }
 
     /**
      * Sync a list of files from the developement environment to the staging environment
      * @param array|traversable $files
      */
-    public function putSourceFilesToStaging($files)
+    public function putSourceFilesToStaging($files = null)
     {
-        $this->devEnv->synchronizeFiles($this->stagingEnv, $files);
+        return $this->synchroniseFiles(
+            $this->website->getDevelopmentEnvironment(),
+            $this->website->getStagingEnvironment(),
+            null,
+            $files
+        );
     }
 
     /**
@@ -88,13 +96,27 @@ class DeployTool
      */
     public function getDeployablePendingFiles()
     {
-        return $this->stagingEnv->getPendingFiles($this->productionEnv);
+        return $this->getPendingFiles(
+            $this->website->getStagingEnvironment(),
+            $this->website->getProductionEnvironment()
+        );
     }
 
 
-    public function deploySourceFilesToProduction($files, $message)
+    public function deploySourceFilesToProduction($message, $files = null)
     {
-        $this->stagingEnv->synchronizeFiles($this->productionEnv, $files, $message);
+        return $this->synchroniseFiles(
+            $this->website->getStagingEnvironment(),
+            $this->website->getProductionEnvironment(),
+            $message,
+            $files
+        );
+    }
+
+
+    public function getLastCommand()
+    {
+        return $this->lastCommand;
     }
 
 }

@@ -6,9 +6,41 @@
  * Created : 11 juin 2013
  * Encoding : UTF-8
  */
+?>
+<pre><?php echo $command;?></pre>
 
-if (sizeof($pendingFiles) === 0) {
-    echo "No file to deploy to production";
-} else {
-    mvd($pendingFiles);
-}
+<?php
+if (sizeof($pendingFiles) === 0) :
+    ?>
+    <div class="alert alert-info">Aucun fichier en attente de mise en production.</div>
+    <?php
+else :
+    ?>
+    <div class="alert alert-info"><?php echo sizeof($pendingFiles)?> fichiers en attente de deploiement</div>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Fichier</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php
+            foreach ($pendingFiles as $file) :
+                ?>
+                <tr>
+                    <td><a href=""><?php echo $file?></a></td>
+                </tr>
+                <?php
+            endforeach;
+            ?>
+        </tbody>
+    </table>
+
+    <form action="<?php echo $this->url('vpwdeploytool/deployFiles', array('website' => $website->getId()))?>" method="post">
+        <div align="center">
+            <input class="btn btn-warning" type="submit" value="Déployer en production !">
+        </div>
+    </form>
+    <?php
+endif;

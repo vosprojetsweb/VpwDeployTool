@@ -18,7 +18,6 @@ use Zend\ModuleManager\ModuleManagerInterface;
 class Module implements
     AutoloaderProviderInterface,
     ConfigProviderInterface,
-    ServiceProviderInterface,
     InitProviderInterface
 {
 
@@ -41,16 +40,6 @@ class Module implements
     public function getConfig($env = null)
     {
         return include __DIR__ . '/config/module.config.php';
-    }
-
-
-    public function getServiceConfig()
-    {
-        return array(
-            'factories' => array(
-                'VpwDeployTool\DeployTool' => 'VpwDeployTool\DeployToolFactory',
-            )
-        );
     }
 
     public function init(ModuleManagerInterface $moduleManager)

@@ -1,0 +1,16 @@
+<?php
+/**
+ *
+ * @author christophe.borsenberger@vosprojetsweb.pro
+ *
+ * Created : 13 juin 2013
+ * Encoding : UTF-8
+ */
+
+foreach ($websites as $website):
+    ?>
+    <div class="well">
+        <a href="<?php echo $this->url('vpwdeploytool/showModifiedFiles', array('website' => $website->getId()))?>"><?php echo $this->escapeHtml($website->getName())?></a>
+    </div>
+    <?php
+endforeach;

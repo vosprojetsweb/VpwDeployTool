@@ -23,26 +23,22 @@ class RemoteEnvironment extends LocalEnvironment
     protected $sshIdentityFile;
 
 
-    public function __construct($root, $host)
+    public function __construct($root = null, $host = null)
     {
         parent::__construct($root);
 
         $this->host = $host;
     }
 
-    public function setOptions($options)
+    /**
+     * The root isn't easily checkable, so we return always true
+     *
+     * (non-PHPdoc)
+     * @see \VpwDeployTool\Environment\AbstractEnvironment::checkRoot()
+     */
+    protected function checkRoot($root)
     {
-        if (isset($options['sshPort'])) {
-            $this->sshPort = intval($options['sshPort']);
-        }
-
-        if (isset($options['sshIdentityFile'])) {
-            $this->sshIdentityFile = $options['sshIdentityFile'];
-        }
-
-        if (isset($options['sshUser'])) {
-            $this->sshUser = $options['sshUser'];
-        }
+        return true;
     }
 
     public function getRoot()
@@ -50,9 +46,53 @@ class RemoteEnvironment extends LocalEnvironment
         return $this->host . ':' . $this->root;
     }
 
+    /**
+      * @return string
+      */
+    public function getHost()
+    {
+        return $this->host;
+    }
+
+    /**
+     *
+     * @param host
+     */
+    public function setHost($host)
+    {
+        $this->host = $host;
+    }
+
+    /**
+      * @return string
+      */
+    public function getSshUser()
+    {
+        return $this->sshUser;
+    }
+
+    /**
+     *
+     * @param sshUser
+     */
+    public function setSshUser($sshUser)
+    {
+        $this->sshUser = $sshUser;
+    }
+
+    public function setSshPort($port)
+    {
+        $this->sshPort = intval($port);
+    }
+
     public function getSshPort()
     {
         return $this->sshPort;
+    }
+
+    public function setSshIdentityFile($file)
+    {
+        $this->sshIdentityFile = $file;
     }
 
     public function getSshIdentityFile()

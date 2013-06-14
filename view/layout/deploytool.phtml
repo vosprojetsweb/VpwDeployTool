@@ -16,16 +16,13 @@
     </head>
     <body>
         <h1>Admin de déploiement</h1>
-        <div class="nav-collapse collapse">
-                <?php
-                echo $this->navigation('vpwdeploytool_navigation')->menu()->renderMenu(null, array(
-                    'minDepth' => 1,
-                    'maxDepth' => 1,
-                    'ulClass' => 'nav'
-                ));
-                ?>
-        </div>
         <?php
+        echo $this->navigation('navigation')->menu()->renderMenu(null, array(
+            'minDepth' => 0,
+            'maxDepth' => 0,
+            'ulClass' => 'nav nav-tabs'
+        ));
+
         echo $this->content;
 
         echo $this->inlineScript();

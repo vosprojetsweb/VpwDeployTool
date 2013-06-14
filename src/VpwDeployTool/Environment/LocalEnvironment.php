@@ -15,21 +15,5 @@ use VpwDeployTool\Wrapper\RsyncWrapper;
 class LocalEnvironment extends AbstractEnvironment
 {
 
-    public function getPendingFiles(AbstractEnvironment $dest)
-    {
-        $rsyncWrapper = new RsyncWrapper($this->getRoot(), $dest->getRoot());
-        $rsyncWrapper->setExcludePatterns($this->excludePatterns);
-        return $rsyncWrapper->getFileList();
-    }
-
-    public function synchronizeFiles(AbstractEnvironment $dest, array $files, $message=null)
-    {
-        if (sizeof($files) === 0) {
-            throw new DeployToolException('There is no file to put in staging envionment');
-        }
-
-        $rsyncWrapper = new RsyncWrapper($this->getRoot(), $dest->getRoot());
-        return $rsyncWrapper->synchronizeFiles($files);
-    }
 
 }

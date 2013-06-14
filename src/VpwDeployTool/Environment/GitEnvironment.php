@@ -15,21 +15,25 @@ use VpwDeployTool\Wrapper\GitWrapper;
 class GitEnvironment extends LocalEnvironment
 {
 
-    public function getPendingFiles(AbstractEnvironment $dest)
+    private $gitDir;
+
+    public function __construct($root = null, $gitDir = null)
     {
-        $gitWrapper = new GitWrapper($this->getRoot());
-        return $gitWrapper->getFileList();
+        parent::__construct($root);
+
+        if ($gitDir != null) {
+            $this->setGitDir($gitDir);
+        }
+
     }
 
-    public function synchronizeFiles(AbstractEnvironment $dest, array $files, $message=null)
+    public function setGitDir($gitDir)
     {
-        //Commit Stuff
-        $gitWrapper = new GitWrapper($this->getRoot());
-        $gitWrapper->addAll();
-        $gitWrapper->commit($message);
-
-        parent::synchronizeFiles($dest, $files);
+        $this->gitDir = $gitDir;
     }
 
-
+    public function getGitDir()
+    {
+        return $this->gitDir;
+    }
 }

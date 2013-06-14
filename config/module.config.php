@@ -1,13 +1,16 @@
 <?php
 use Zend\Navigation\Service\ConstructedNavigationFactory;
 return array(
+    'service_manager' => array(
+        'invokables' => array(
+            'VpwDeployTool\DeployTool' => 'VpwDeployTool\DeployTool',
+        )
+    ),
+
     'view_manager' => array(
         'template_path_stack' => array(
             'vpwdeploytool' => __DIR__ . '/../view',
         ),
-        'template_map' => array(
-            'layout/vpwdeploytool' => __DIR__ . '/../view/layout/deploytool.phtml',
-         )
     ),
 
     'controllers' => array(
@@ -18,21 +21,34 @@ return array(
 
     'router' => array(
         'routes' => array(
-            'vpwdeploytool' => array(
+            'VpwDeployTool' => array(
                 'type'    => 'Literal',
                 'options' => array(
                     'route'    => '/deployment',
                     'defaults' => array(
                         'controller'    => 'VpwDeployTool\Controller\DeployTool',
-                        'action'        => 'showModifiedSourceFiles',
+                        'action'        => 'selectWebsite',
                     ),
                 ),
                 'may_terminate' => true,
                 'child_routes' => array(
-                    'putFilestoStaging' => array(
-                        'type'    => 'Literal',
+                    'showModifiedFiles' => array(
+                        'type'    => 'Segment',
                         'options' => array(
-                            'route'    => '/to-staging',
+                            'route'    => ':website/source-files',
+                            'constraints' => array(
+                                'action' => '[a-zA-Z][a-zA-Z0-9_-]*',
+                            ),
+                            'defaults' => array(
+                                'controller'    => 'VpwDeployTool\Controller\DeployTool',
+                                'action'        => 'showModifiedSourceFiles',
+                            ),
+                        ),
+                    ),
+                    'putFilestoStaging' => array(
+                        'type'    => 'Segment',
+                        'options' => array(
+                            'route'    => ':website/put-to-staging',
                             'defaults' => array(
                                 'controller'    => 'VpwDeployTool\Controller\DeployTool',
                                 'action'        => 'putSourceFilesToStaging',
@@ -40,9 +56,9 @@ return array(
                         ),
                     ),
                     'pendingFiles' => array(
-                        'type'    => 'Literal',
+                        'type'    => 'Segment',
                         'options' => array(
-                            'route'    => '/pending-files',
+                            'route'    => ':website/pending-files',
                             'defaults' => array(
                                 'controller'    => 'VpwDeployTool\Controller\DeployTool',
                                 'action'        => 'showDeployablePendingFiles',
@@ -50,38 +66,17 @@ return array(
                         ),
                     ),
                     'deployFiles' => array(
-                        'type'    => 'Literal',
+                        'type'    => 'Segment',
                         'options' => array(
-                            'route'    => '/deploy-files',
+                            'route'    => ':website/deploy-files',
                             'defaults' => array(
                                 'controller'    => 'VpwDeployTool\Controller\DeployTool',
-                                'action'        => 'deploySourceFiles',
+                                'action'        => 'deployFiles',
                             ),
                         ),
                     )
                 )
             )
-        )
-    ),
-
-    'navigation' => array(
-        'VpwDeployTool' => array(
-            'sourceFiles' => array(
-                'label' => 'Source Files',
-                'route' => 'vpwdeploytool',
-            ),
-            'pendingFiles' => array(
-                'label' => 'Pending Files',
-                'route' => 'pendingFiles',
-            )
-        )
-    ),
-
-    'service_manager' => array(
-        'factories' => array(
-            'vpwdeploytool_navigation' => function ($sm) {
-                return new ConstructedNavigationFactory($config = $sm->get('Configuration')['navigation']['VpwDeployTool']);
-            }
         )
     ),
 );

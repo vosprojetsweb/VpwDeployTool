@@ -2,6 +2,8 @@
 namespace VpwDeployTool\Wrapper;
 
 use VpwDeployTool\Exception\WrapperException;
+use VpwDeployTool\Environment\AbstractEnvironment;
+use VpwDeployTool\Environment\RemoteEnvironment;
 /**
  *
  * @author christophe.borsenberger@vosprojetsweb.pro
@@ -15,16 +17,16 @@ class RsyncWrapper extends AbstractWrapper
 {
 
     /**
-     * Directory to sync
-     * @var string
+     * Environment to synchronize
+     * @var AbstractEnvironment
      */
-    private $srcDirectory;
+    private $src;
 
     /**
-     * The synced directory
-     * @var string
+     * The synchronized Environment
+     * @var AbstractEnvironment
      */
-    private $destDirectory;
+    private $dest;
 
 
     /**
@@ -34,45 +36,52 @@ class RsyncWrapper extends AbstractWrapper
     private $excludePatterns = array();
 
 
-    public function __construct($src, $dest)
+    /**
+     *
+     * @param AbstractEnvironment $src
+     * @param AbstractEnvironment $dest
+     */
+    public function __construct(AbstractEnvironment $src, AbstractEnvironment $dest)
     {
-        $this->setSourceDirectory($src);
-        $this->setDestinationDirectory($dest);
+        $this->setSource($src);
+        $this->setDestination($dest);
+        $this->setExcludePatterns($src->getExcludePatterns());
     }
 
-    public function setSourceDirectory($dir)
+    /**
+     *
+     * @param AbstractEnvironment $env
+     */
+    public function setSource(AbstractEnvironment $env)
     {
-        $this->checkDirectory($dir);
-        $this->srcDirectory = $dir;
+        $this->src= $env;
     }
 
-    public function getSourceDirectory()
+    /**
+     *
+     * @return \VpwDeployTool\Environment\AbstractEnvironment
+     */
+    public function getSource()
     {
-        return $this->srcDirectory;
+        return $this->src;
     }
 
-    public function setDestinationDirectory($dir)
+    /**
+     *
+     * @param AbstractEnvironment $env
+     */
+    public function setDestination(AbstractEnvironment $env)
     {
-        $this->checkDirectory($dir);
-        $this->destDirectory = $dir;
+        $this->dest = $env;
     }
 
-    public function getDestinationDirectory()
+    /**
+     *
+     * @return \VpwDeployTool\Environment\AbstractEnvironment
+     */
+    public function getDestination()
     {
-        return $this->destDirectory;
-    }
-
-    private function checkDirectory($dir)
-    {
-        if (is_dir($dir) === false) {
-            throw new WrapperException("The file '{$dir}' is not a directory");
-        }
-
-        if (is_readable($dir) === false) {
-            throw new WrapperException("The directory '{$dir}' is not readable");
-        }
-
-        return true;
+        return $this->dest;
     }
 
     /**
@@ -94,25 +103,20 @@ class RsyncWrapper extends AbstractWrapper
     public function getFileList()
     {
         $cmd = $this->findExec('rsync');
-        $cmd .= ' ' . $this->getDefaultOptions();
-        $cmd .= ' --verbose';
-        $cmd .= ' --dirs';
         $cmd .= ' --dry-run';
-        $cmd .= ' --delete';
-        $cmd .= ' ' . escapeshellarg($this->getSourceDirectory());
-        $cmd .= ' ' . escapeshellarg($this->getDestinationDirectory());
-        $cmd .= ' 2>&1';
+        $cmd .= ' ' . escapeshellarg($this->getSource()->getRoot());
+        $cmd .= ' ' . escapeshellarg($this->getDestination()->getRoot());
 
-        exec($cmd, $output, $returnVar);
-
-        if ($returnVar !== 0) {
-            throw new WrapperException($output);
-        }
+        $output = $this->exec($cmd);
 
         $list = array();
         $size = sizeof($output) - 3;
         for ($i = 1; $i < $size; $i++) {
-            $list[] = $output[$i];
+            $filename = $output[$i];
+            if(stripos($filename, 'deleting ') === 0) {
+                $filename = substr($filename, 9);
+            }
+            $list[] = new \SplFileInfo($filename);
         }
 
         return $list;
@@ -120,38 +124,38 @@ class RsyncWrapper extends AbstractWrapper
 
     public function synchronizeFiles($files)
     {
-        $cmd = '/bin/echo -ne ' . escapeshellarg(implode('\0', $files)) . '|';
+        $cmd = '';
+
+        if (is_array($files) === true && sizeof($files) > 0) {
+            $cmd .= '/bin/echo -ne ' . escapeshellarg(implode('\0', $files)) . '|';
+        }
 
         $cmd .= $this->findExec('rsync');
-        $cmd .= ' ' . $this->getDefaultOptions();
-        $cmd .= ' --verbose';
-        $cmd .= ' --dirs';
-        $cmd .= ' --dry-run';
-        $cmd .= ' --delete';
-        $cmd .= ' --files-from=-';
-        $cmd .= ' --from0';
         $cmd .= ' --stats';
-        $cmd .= ' ' . escapeshellarg($this->getSourceDirectory());
-        $cmd .= ' ' . escapeshellarg($this->getDestinationDirectory());
-        $cmd .= ' 2>&1';
 
-        exec($cmd, $output, $returnVar);
-
-        if ($returnVar !== 0) {
-            throw new WrapperException(implode("\n", $output));
+        if (is_array($files) === true && sizeof($files) > 0) {
+            $cmd .= ' --files-from=-';
+            $cmd .= ' --from0';
         }
 
-        return $output;
+        $cmd .= ' ' . escapeshellarg($this->getSource()->getRoot());
+        $cmd .= ' ' . escapeshellarg($this->getDestination()->getRoot());
+
+        return $this->exec($cmd);
     }
 
-    private function getDefaultOptions()
+    public function findExec($exec)
     {
-        $options = "-a --links";
+        $exec = parent::findExec($exec) . ' -avz --omit-dir-times --dirs --delete --links';
 
         foreach ($this->getExcludePatterns() as $pattern) {
-            $options .= " --exclude=".escapeshellarg($pattern);
+            $exec .= " --exclude=".escapeshellarg($pattern);
         }
 
-        return $options;
+        if ($this->getDestination() instanceof RemoteEnvironment) {
+            $exec .= ' --rsh ' . escapeshellarg($this->getDestination()->getSshCommand());
+        }
+
+        return $exec;
     }
 }
